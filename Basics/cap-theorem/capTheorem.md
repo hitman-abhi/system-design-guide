@@ -10,6 +10,33 @@ This idea is widely referenced because it forces an important design decision:
 
 That is the real value of CAP. It is not a slogan about choosing any two letters. It is a model for reasoning about failure behavior in distributed systems.
 
+## Visual Model
+
+The simplest way to understand CAP is to visualize a partition splitting replicas while clients continue sending requests.
+
+```mermaid
+flowchart TD
+    C1[Client A writes x = 10] --> R1[Replica 1]
+    C2[Client B reads x] --> R2[Replica 2]
+    R1 -. network partition .- R2
+
+    R2 --> D{How should Replica 2 respond?}
+    D --> A[Return available response now]
+    D --> C[Wait / reject until state is verified]
+
+    A --> A1[Preserve availability]
+    A --> A2[Risk stale read]
+
+    C --> C1[Preserve consistency]
+    C --> C2[Sacrifice availability]
+```
+
+During the partition:
+
+- the system is forced into an explicit decision, not an abstract theorem
+- one branch preserves responsiveness at the cost of freshness
+- the other preserves correctness at the cost of answering every request
+
 ## 2. The Core Problem
 
 A distributed system runs across multiple machines connected by a network. That network can:
@@ -125,6 +152,17 @@ This is the central tradeoff CAP describes.
 
 A CP system prefers consistency over availability during a partition.
 
+```mermaid
+flowchart LR
+    P1[Minority partition] --> X[Reject / delay requests]
+    P2[Majority partition] --> OK[Continue with verified state]
+```
+
+What to notice:
+
+- only the partition that can still prove authority continues normally
+- the other side gives up availability to avoid serving unsafe answers
+
 Typical behavior:
 
 - reads or writes may fail if the node cannot prove it has the latest state
@@ -155,6 +193,18 @@ Typical use cases:
 ### 7.2 AP Systems
 
 A system that prioritizes availability over strong consistency during a partition continues serving requests even when replicas cannot coordinate.
+
+```mermaid
+flowchart LR
+    P1[Partition A] --> A1[Continue serving requests]
+    P2[Partition B] --> A2[Continue serving requests]
+    A1 -. later reconcile .- A2
+```
+
+What to notice:
+
+- both sides keep responding during the split
+- the cost is divergence that must be repaired or merged later
 
 Typical behavior:
 

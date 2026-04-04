@@ -10,6 +10,35 @@ That question sits at the center of distributed systems. Once data is replicated
 
 This topic matters because distributed systems do not fail only by crashing. They also fail by becoming confusing. A system may accept a write but show stale data to another user. Two users may observe the same events in different orders. A client may read older data than it saw a moment ago. Consistency models exist to define which of these outcomes are allowed and which are forbidden.
 
+## Visual Model
+
+Consistency models are easiest to understand as different visibility rules over the same write and read sequence.
+
+```mermaid
+sequenceDiagram
+    participant A as Client A
+    participant P as Primary
+    participant R as Replica 2
+    participant B as Client B
+
+    A->>P: Write profile_photo = new.png
+    P-->>A: Ack
+    Note over P,R: Replication is still in progress
+    B->>R: Read profile_photo
+    alt Strong consistency
+        R-->>B: Wait, redirect, or return only fresh value
+    else Eventual consistency
+        R-->>B: May return old value temporarily
+    end
+    P-->>R: Replicate update
+```
+
+The key question is what `Client B` is allowed to observe before replication completes:
+
+- the write sequence is the same in both cases
+- the difference is the contract for what the read may legally observe
+- that is why consistency models are about visibility rules, not just storage internals
+
 ## 2. The Core Problem
 
 A single-threaded program updating local memory is simple: there is one machine, one copy of data, and one clear execution order.
@@ -201,6 +230,15 @@ This is why consistency models exist. Once systems replicate data and tolerate d
 
 Strong consistency usually refers to linearizable behavior.
 
+```mermaid
+flowchart LR
+    W[Write acknowledged] --> R1[Next read sees new value]
+```
+
+What to notice:
+
+- once the write is acknowledged, later reads should not move backward
+
 Guarantees:
 
 - once a write is acknowledged, later reads return that value or a newer one
@@ -240,6 +278,18 @@ This is stronger than eventual consistency, but weaker than linearizability.
 
 Causal consistency guarantees that causally related operations are seen in the same order by all clients.
 
+```mermaid
+flowchart TD
+    P1[Alice posts message] --> P2[Bob reads message]
+    P2 --> P3[Bob replies]
+    P3 --> RULE[Clients should not see reply before original post]
+```
+
+What to notice:
+
+- related events must preserve meaningful cause-and-effect order
+- unrelated events may still be observed in different orders
+
 Example:
 
 1. Alice posts a message.
@@ -254,6 +304,18 @@ This model is a useful middle ground because it preserves meaningful user intent
 ### 7.4 Eventual Consistency
 
 Eventual consistency guarantees convergence if updates stop.
+
+```mermaid
+flowchart LR
+    R1[Replica A = v2] -. temporary divergence .- R2[Replica B = v1]
+    R2 --> C[Converges later]
+    R1 --> C
+```
+
+What to notice:
+
+- the system tolerates temporary disagreement
+- the guarantee is eventual convergence, not immediate agreement
 
 What it allows during normal operation:
 
