@@ -74,6 +74,39 @@ Good format:
 2. show the system choices
 3. explain why each choice gives up something
 
+### Optional: Visual Model
+
+If the concept is spatial, flow-based, or easier to understand visually, add a short diagram near the top.
+
+Good candidates:
+
+- hash rings
+- request flow
+- leader / follower topology
+- quorum overlap
+- cache hit / miss path
+- shard routing
+
+Use visuals to clarify one hard idea, not to decorate the page.
+
+Good diagram behavior:
+
+- show the minimum number of entities needed to explain the idea
+- label the direction of flow, ownership, or ordering
+- prefer one strong diagram over several weak ones
+- add 2-5 lines of interpretation immediately below the diagram
+- use diagrams where the reader benefits from seeing structure, not just reading about it
+
+Prefer diagrams for topics such as:
+
+- rings, ranges, and key placement
+- request / response flow
+- replication topology
+- leader / follower behavior
+- cache interaction path
+- load distribution
+- retry and deduplication flow
+
 ### 7. Main Variants or Modes
 
 If the concept has categories, branches, or operating modes, describe them here.
@@ -156,6 +189,9 @@ Close with a short synthesis:
 - Prefer precise terms over motivational language.
 - Avoid audience-specific or role-specific labels.
 - Use examples whenever a definition could otherwise feel abstract.
+- Add a diagram when topology, flow, ownership, or ordering is central to understanding the topic.
+- Prefer diagrams that explain behavior, not just components.
+- Always explain what the reader should notice from the diagram right below it.
 - Distinguish formal meaning from common shorthand.
 - When a concept is commonly misunderstood, say so directly and correct it.
 - Focus on behavior under failure, scale, or concurrency where relevant.
@@ -170,6 +206,8 @@ Not every concept needs all of these, but they are useful when relevant:
 - **Comparison With Similar Concepts**: when two ideas are often confused
 - **API / Implementation View**: when the concept has practical coding implications
 - **Operational Risks**: when production behavior matters as much as the theory
+- **Visual Model**: when the concept is easier to explain with a diagram than with prose alone
+- **State Transition or Sequence Diagram**: when timing, retries, or ordering are central to the topic
 
 ## Minimal Skeleton
 
