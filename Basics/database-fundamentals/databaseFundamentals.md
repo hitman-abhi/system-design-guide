@@ -358,7 +358,27 @@ Examples:
 - event ingestion
 - graph-like recommendation systems
 
-## 11. Common Misconceptions
+## 11. Real-World Examples
+
+### Banking and Ledger Systems
+
+Financial systems usually care deeply about transactional correctness.
+
+That is why relational databases with strong ACID guarantees remain a common fit for balances, transfers, invoices, and any workflow where partial success is unacceptable and auditability matters.
+
+### Product Catalogs and Content Stores
+
+Large catalogs often contain flexible or evolving schemas across many item types.
+
+Document-oriented NoSQL systems are frequently used here because the shape of the data changes often, read scale is high, and strict cross-record transactions are not always the primary concern.
+
+### Event and Telemetry Pipelines
+
+Logs, clicks, and telemetry streams often arrive at high volume and are written continuously.
+
+Wide-column or key-value systems are often chosen when horizontal write scale, partition-aware access, and operational simplicity at large volume matter more than rich relational joins.
+
+## 12. Common Misconceptions
 
 ### "SQL means old and NoSQL means modern"
 
@@ -394,7 +414,7 @@ Many systems use:
 - NoSQL for high-scale or specialized workloads
 - caching and search systems beside both
 
-## 12. Design Guidance
+## 13. Design Guidance
 
 Choose the database model by starting from the workload and correctness requirements.
 
@@ -416,7 +436,7 @@ A good practical pattern:
 
 The strongest database architecture is usually not the one with the most technologies. It is the one where each datastore has a clear reason to exist.
 
-## 13. Summary
+## 14. Summary
 
 Database fundamentals are really about understanding data guarantees, access patterns, and scale boundaries.
 

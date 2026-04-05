@@ -401,7 +401,27 @@ Examples:
 
 Security concerns should not be bolted on after the endpoint shape is already fixed.
 
-## 15. Common Misconceptions
+## 15. Real-World Examples
+
+### Public REST APIs
+
+Stripe, GitHub, and similar public APIs succeed partly because the contract is predictable even when the backend evolves.
+
+Clear resource modeling, stable status codes, consistent pagination, and explicit idempotency behavior let external clients build with confidence instead of reverse-engineering every endpoint separately.
+
+### Internal Platform APIs
+
+Inside a company, teams often expose shared services for identity, billing, notifications, or catalog data.
+
+If those APIs are inconsistent, every consuming team invents custom client behavior. Strong API design reduces that integration tax by making internal services behave like reliable platform products rather than ad hoc HTTP handlers.
+
+### Mobile and Web Backend APIs
+
+Consumer applications often depend on APIs over unreliable networks and across multiple client versions.
+
+That makes backward compatibility, clear error semantics, and careful payload design operational concerns, not just style preferences. A well-designed API keeps old clients working while newer clients adopt richer behavior gradually.
+
+## 16. Common Misconceptions
 
 ### "REST Means Good API Design"
 
@@ -431,7 +451,7 @@ Usually not.
 
 The API should model consumer-friendly behavior, not leak internal storage shape directly.
 
-## 16. Design Guidance
+## 17. Design Guidance
 
 Design APIs around stable domain concepts and client workflows, not around controllers or storage tables.
 
@@ -457,7 +477,7 @@ Useful patterns:
 
 The best API is the one that makes correct client behavior easy and ambiguous client behavior hard.
 
-## 17. Summary
+## 18. Summary
 
 API design basics are really about contract quality.
 
