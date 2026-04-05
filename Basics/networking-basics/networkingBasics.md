@@ -246,7 +246,27 @@ When a request is slow, the bottleneck might be:
 
 That is why layered understanding matters operationally.
 
-## 9. Common Misconceptions
+## 9. Real-World Examples
+
+### Opening an E-Commerce Website
+
+When a user opens a shopping site, DNS resolves the domain, TCP and TLS establish a secure connection, and HTTP carries the actual request and response.
+
+That full path is why network basics matter in system design. A slow DNS lookup, failed certificate validation, or overloaded origin can all show up to the user as "the website is slow" even though the problem sits in a different layer.
+
+### Calling a Public API
+
+A mobile app calling an API over HTTPS depends on several pieces working together: name resolution, routing, transport reliability, encryption, and application semantics.
+
+Understanding that stack helps explain why timeouts, retries, keep-alive behavior, and certificate issues can all affect what looks like one simple API call.
+
+### CDN and Reverse Proxy Deployments
+
+Modern systems often place DNS, CDN, TLS termination, load balancers, and application services across different layers.
+
+That architecture only makes sense if the team understands how the network path is composed. Otherwise, debugging becomes guesswork because every component is treated like an opaque box.
+
+## 10. Common Misconceptions
 
 ### "DNS is just a phone book"
 
@@ -276,7 +296,7 @@ No.
 
 HTTPS secures transport. It does not automatically solve authorization, input validation, secret management, or application vulnerabilities.
 
-## 10. Design Guidance
+## 11. Design Guidance
 
 Use networking fundamentals to reason about latency, availability, and security path by path.
 
@@ -299,7 +319,7 @@ Useful practical patterns:
 
 Strong systems are built by people who can reason not only about the business logic, but about the path the bytes take to reach it.
 
-## 11. Summary
+## 12. Summary
 
 Networking basics are foundational because distributed systems are ultimately coordinated over networks, not inside one process.
 

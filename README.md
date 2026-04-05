@@ -18,7 +18,6 @@ The repository is currently organized by topic area.
 
 Foundational distributed systems concepts that support more advanced design decisions.
 
-- [Concept Template](Basics/concept-template.md): Reusable structure for writing in-depth concept pages.
 - [CAP Theorem](Basics/cap-theorem/capTheorem.md): Tradeoffs between consistency, availability, and partition tolerance during network failures.
 - [Consistency Models](Basics/consistency-models/consistencyModels.md): Visibility and ordering guarantees for reads and writes in distributed systems.
 - [Replication](Basics/replication/replication.md): How systems maintain multiple copies of data for durability, availability, scale, and recovery.
@@ -33,6 +32,45 @@ Foundational distributed systems concepts that support more advanced design deci
 - [Message Queues](Basics/message-queues/messageQueues.md): How systems decouple producers and consumers, absorb spikes, and process work asynchronously.
 - [Rate Limiting](Basics/rate-limiting/rateLimiting.md): How systems protect shared capacity and enforce fairness under load.
 - [API Design Basics](Basics/api-design-basics/apiDesignBasics.md): A practical foundation chapter covering resources, HTTP semantics, errors, pagination, idempotency, and compatibility.
+- [Indexing Basics](Basics/indexing-basics/indexingBasics.md): How indexes reduce lookup cost, when they help, and what they cost on writes.
+- [Latency vs Throughput](Basics/latency-vs-throughput/latencyVsThroughput.md): How to reason about per-request speed versus total system output.
+- [Availability and Fault Tolerance Basics](Basics/availability-fault-tolerance-basics/availabilityFaultToleranceBasics.md): How systems stay reachable and correct enough under component failure.
+- [Stateless vs Stateful Services](Basics/stateless-vs-stateful-services/statelessVsStatefulServices.md): How service state placement changes scaling, routing, and recovery.
+
+### Intermediate
+
+Topics that build on the fundamentals and focus on how distributed building blocks are composed in real systems.
+
+Section index: [Intermediate](Intermediate/README.md)
+
+- [Quorum](Intermediate/quorum/quorum.md): How replicated systems use read and write thresholds to create overlap and safe coordination.
+- [Leader Election](Intermediate/leader-election/leaderElection.md): How distributed systems choose and maintain one valid authority.
+- [Distributed Locks](Intermediate/distributed-locks/distributedLocks.md): How systems coordinate exclusive work safely across machines.
+- [Service Discovery](Intermediate/service-discovery/serviceDiscovery.md): How clients find healthy service instances in dynamic environments.
+- [Circuit Breakers](Intermediate/circuit-breakers/circuitBreakers.md): How systems stop repeatedly calling unhealthy dependencies before cascading failure spreads.
+- [Backpressure](Intermediate/backpressure/backpressure.md): How slower consumers push capacity signals upstream to prevent runaway backlog.
+- [Load Shedding](Intermediate/load-shedding/loadShedding.md): How systems deliberately reject lower-priority work to preserve core behavior under overload.
+- [Batching](Intermediate/batching/batching.md): How systems group work to improve efficiency while trading off some immediacy.
+- [Pub/Sub](Intermediate/pub-sub/pubSub.md): How publishers and subscribers are decoupled through fan-out messaging channels.
+- [Event-Driven Architecture](Intermediate/event-driven-architecture/eventDrivenArchitecture.md): How systems react to facts asynchronously instead of coordinating all downstream work through direct calls.
+- [Saga Pattern](Intermediate/saga-pattern/sagaPattern.md): How multi-step business workflows recover without one distributed ACID transaction.
+- [Outbox Pattern](Intermediate/outbox-pattern/outboxPattern.md): How services avoid dual-write inconsistencies between database commits and event publication.
+- [CQRS](Intermediate/cqrs/cqrs.md): How command and query paths diverge when write correctness and read efficiency want different models.
+- [Read Replicas](Intermediate/read-replicas/readReplicas.md): How systems offload read traffic and isolate workloads while accepting replica lag tradeoffs.
+- [Write-Ahead Logs](Intermediate/write-ahead-logs/writeAheadLogs.md): How storage systems make writes durable before applying them to primary data structures.
+- [Schema Evolution](Intermediate/schema-evolution/schemaEvolution.md): How data contracts change safely across versions, deployments, and historical records.
+- [Secondary Indexes in Distributed Systems](Intermediate/secondary-indexes-distributed-systems/secondaryIndexesDistributedSystems.md): How alternate query paths are maintained across partitioned data without ignoring consistency and write costs.
+- [Pagination Strategies](Intermediate/pagination-strategies/paginationStrategies.md): How APIs and data stores split large result sets while managing traversal stability and query cost.
+- [API Gateways](Intermediate/api-gateways/apiGateways.md): How edge layers centralize routing, policy enforcement, and client-facing contracts.
+- [Webhooks](Intermediate/webhooks/webhooks.md): How push-based HTTP callbacks work, and why retries, signatures, and idempotency matter.
+- [CDN Design](Intermediate/cdn-design/cdnDesign.md): How edge caching and traffic control reduce origin load and improve global latency.
+- [Failover Strategies](Intermediate/failover-strategies/failoverStrategies.md): How systems detect failure and shift traffic or authority safely to alternate paths.
+- [Disaster Recovery Basics](Intermediate/disaster-recovery-basics/disasterRecoveryBasics.md): How systems restore service and data after failures that exceed normal high-availability assumptions.
+- [Multi-Region Design](Intermediate/multi-region-design/multiRegionDesign.md): How systems trade coordination cost for regional resilience, compliance, and lower user latency.
+- [Security Basics for Distributed Systems](Intermediate/security-basics-distributed-systems/securityBasicsDistributedSystems.md): How trust, identity, transport, and blast radius need to be designed across service boundaries.
+- [Authentication vs Authorization](Intermediate/authentication-vs-authorization/authenticationVsAuthorization.md): How identity proof and permission enforcement solve different access-control problems.
+- [Session Management](Intermediate/session-management/sessionManagement.md): How authenticated user continuity is maintained safely across requests and deployments.
+- [Connection Pooling](Intermediate/connection-pooling/connectionPooling.md): How systems reuse bounded backend connections to reduce setup cost and protect shared capacity.
 
 
 ## How To Use This Repository
