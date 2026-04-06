@@ -72,6 +72,15 @@ Section index: [Intermediate](Intermediate/README.md)
 - [Session Management](Intermediate/session-management/sessionManagement.md): How authenticated user continuity is maintained safely across requests and deployments.
 - [Connection Pooling](Intermediate/connection-pooling/connectionPooling.md): How systems reuse bounded backend connections to reduce setup cost and protect shared capacity.
 
+### Case Studies
+
+End-to-end system design case studies that combine multiple concepts into realistic product designs.
+
+Section index: [Case Studies](Case-Studies/README.md)
+
+- [TinyURL](Case-Studies/tinyurl/tinyUrl.md): How to design a read-heavy URL shortening service with fast redirects, unique code generation, caching, and async analytics.
+- [WhatsApp Messenger](Case-Studies/whatsapp-messenger/whatsAppMessenger.md): How to design a large-scale messaging system with 1:1 chat, group messaging, delivery flow, and read receipts.
+
 
 ## How To Use This Repository
 
