@@ -313,46 +313,136 @@ In practice, message delivery is usually driven over:
 
 The HTTP endpoints are useful to describe the contract, but the live system will often depend on a persistent session layer for real-time delivery.
 
-#### Why WebSocket-Style Persistent Connections Are a Good Fit
+#### Polling vs Long Polling vs WebSocket
 
-For a large-scale chat system, WebSocket-style persistent connections are usually the best fit for live delivery because messaging is not a simple request-response workload.
+These approaches are often grouped together, but they create very different system behavior.
 
-The server needs to be able to:
+#### Polling
 
-- push new messages to the client immediately
-- push read receipt updates
-- push typing or presence-style events if supported later
-- detect whether the client is still connected
+In polling, the client asks the server on a schedule:
 
-Trying to do this with repeated HTTP polling is usually much worse because:
+- "Do you have anything new?"
 
-- latency is higher
-- mobile battery usage is worse
-- server request overhead is much higher
-- the system spends too much effort on asking "anything new?" instead of delivering actual new events
+For example, every few seconds the client issues an HTTP request for updates.
 
-Long polling improves on naive polling, but it still keeps the communication model closer to repeated request cycling than to a true long-lived session.
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Chat Service
 
-A WebSocket-style connection is a better fit because it gives the system:
+    loop Every few seconds
+        C->>S: GET /sync?after=cursor
+        S-->>C: no updates or new messages
+    end
+```
 
-- one long-lived authenticated session
-- bidirectional communication
-- lower per-message overhead
-- better real-time fan-out behavior
+Strengths:
 
-That does not mean WebSocket alone solves the entire delivery problem.
+- simple to implement
+- easy to explain
+- works in almost every environment
 
-Mobile clients still need:
+Costs:
 
-- reconnect logic
-- offline sync
-- push notification fallback when the app is backgrounded or disconnected
+- high request overhead
+- worse battery behavior on mobile
+- latency depends on poll interval
+- most requests are wasted when no new event exists
 
-So the practical recommendation is:
+Polling is usually acceptable for simple dashboards or low-frequency admin systems. It is a poor fit for high-scale realtime chat.
 
-- use persistent WebSocket-style sessions for live delivery
-- use HTTP-based sync APIs for catch-up and history retrieval
-- use push notifications as a wake-up or re-engagement path, not as the durable messaging channel
+#### Long Polling
+
+In long polling, the client sends a request and the server holds it open until:
+
+- a new event arrives
+- or the request times out
+
+Then the client immediately opens another request.
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Chat Service
+
+    C->>S: GET /updates?after=cursor
+    Note over S: hold request open
+    S-->>C: new message arrives
+    C->>S: GET /updates?after=new_cursor
+    Note over S: hold again until next event or timeout
+```
+
+Strengths:
+
+- better latency than naive polling
+- fewer empty responses than fixed-interval polling
+
+Costs:
+
+- still behaves like repeated HTTP request cycling
+- still pays repeated request setup cost
+- harder to run cleanly at massive concurrent connection counts
+- still not a natural bidirectional session model
+
+Long polling is often a transitional design when the system wants push-like behavior without a true persistent session layer.
+
+#### WebSocket-Style Persistent Connection
+
+With WebSocket-style transport, the client opens one authenticated long-lived connection and both sides can send frames over it.
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as Realtime Gateway
+
+    C->>G: Open authenticated WebSocket
+    G-->>C: Session established
+    G-->>C: New message event
+    C-->>G: Read receipt event
+    G-->>C: Delivery update
+```
+
+Strengths:
+
+- low overhead per event
+- natural server push
+- natural client-to-server event flow
+- good fit for chat, read receipts, typing, and presence
+- easier to associate connection state with a specific logged-in device session
+
+Costs:
+
+- requires a large persistent-connection tier
+- needs heartbeat handling, reconnect handling, and session routing
+- still requires a durable sync path after reconnect
+
+#### Recommendation
+
+For a WhatsApp-style system, WebSocket-style persistent sessions are the best fit for the live path.
+
+Why:
+
+- chat is fundamentally push-driven
+- the server needs to push events as soon as they are available
+- the client also needs to emit events such as acknowledgements and reads without paying full HTTP setup cost each time
+
+That does not mean HTTP disappears.
+
+A practical system uses:
+
+- WebSocket-style sessions for realtime delivery
+- HTTP or RPC sync APIs for reconnect and history catch-up
+- push notifications when the app is backgrounded, disconnected, or the socket is unavailable
+
+So the recommendation is not:
+
+- "replace everything with WebSocket"
+
+It is:
+
+- use WebSocket for the hot realtime path
+- use sync APIs for correctness and recovery
+- use push notifications as a wake-up mechanism, not as the source of truth
 
 ## 8. High-Level Design
 
@@ -367,37 +457,83 @@ At a large scale, the system should separate:
 Core components:
 
 - clients
-- edge/gateway layer for persistent connections
-- load balancer
-- chat gateway fleet
-- messaging service fleet
-- conversation and message store
+- DNS / global traffic routing
+- edge and load balancer layer
+- realtime gateway fleet
+- session directory
+- authentication and token validation
+- conversation service
+- message write service
+- message store
+- group membership service
+- delivery stream / queue
 - fan-out workers
-- delivery queue / stream
 - read-state service
-- notification / offline push service
+- sync service
+- push notification service
+- caches for hot metadata and session lookups
 
 ```mermaid
 flowchart LR
-    U[Mobile / Web Client] --> EDGE[Edge / connection ingress]
-    EDGE --> LB[Load balancer]
-    LB --> GW[Chat gateway fleet]
-    GW --> MSG[Messaging service fleet]
-    MSG --> STORE[(Conversation + message store)]
-    MSG --> STREAM[Delivery stream / queue]
-    STREAM --> FAN[Fan-out workers]
-    FAN --> GW
-    FAN --> PUSH[Push notification service]
-    GW --> READ[Read-state service]
+    C[Mobile and Web Clients]
+    DNS[DNS and Global Traffic Router]
+    EDGE[Edge and L7 Load Balancer]
+    GW[Realtime Gateway Fleet]
+    AUTH[Auth and Token Validation]
+    SESS[(Session Directory)]
+    CACHE[(Hot Metadata Cache)]
+    CONV[Conversation Service]
+    MSG[Message Write Service]
+    GROUP[Group Membership Service]
+    READ[Read State Service]
+    SYNC[Sync and History Service]
+    STORE[(Message and Conversation Store)]
+    STREAM[Delivery Stream]
+    FAN[Fan-out Worker Fleet]
+    PUSH[Push Notification Service]
+    PROVIDER[APNS or FCM]
+
+    C --> DNS
+    DNS --> EDGE
+    EDGE --> GW
+    GW --> AUTH
+    GW --> SESS
+    GW --> CACHE
+
+    GW --> MSG
+    GW --> READ
+
+    C --> EDGE
+    EDGE --> SYNC
+
+    MSG --> CONV
+    MSG --> GROUP
+    MSG --> STORE
+    MSG --> STREAM
+
     READ --> STORE
+    READ --> STREAM
+
+    SYNC --> STORE
+    SYNC --> CONV
+    SYNC --> GROUP
+
+    STREAM --> FAN
+    FAN --> SESS
+    FAN --> GROUP
+    FAN --> GW
+    FAN --> PUSH
+    PUSH --> PROVIDER
+    PROVIDER --> C
 ```
 
 What to notice:
 
-- persistent connection handling is separated from core message persistence logic
-- the message write path and delivery fan-out path are distinct
-- offline delivery and push notification are secondary paths, not the main synchronous send path
-- read-state updates are modeled as their own concern because read receipts evolve independently from message creation
+- the realtime ingress path is different from the sync and history path
+- connection management, message writes, read updates, and offline recovery are not one service
+- the sender write path ends after durable persistence and event publication, not after delivery to all recipients
+- fan-out workers sit behind a durable stream because delivery is asynchronous and retriable
+- push notifications are downstream of delivery logic, not the primary channel for message correctness
 
 At smaller scale, several of these responsibilities can live in one logical service. At large scale, separating them makes throughput shaping and operational isolation much easier.
 
@@ -424,6 +560,212 @@ Keeping them separate helps because:
 - write load scales with messages
 - deploy risk is isolated
 - the system can evolve fan-out logic without rebuilding the connection layer every time
+
+### Service Responsibilities
+
+The diagram is only useful if each component has a clear boundary.
+
+#### Realtime Gateway Fleet
+
+Responsibilities:
+
+- terminate and maintain WebSocket-style sessions
+- authenticate the device at connect time
+- track heartbeats and connection liveness
+- forward send-message and read-receipt commands to backend services
+- deliver events to currently connected devices
+
+This tier should be optimized for:
+
+- very high concurrent connections
+- low per-message overhead
+- minimal business logic
+
+It should not become the place where message durability decisions are made.
+
+#### Session Directory
+
+Responsibilities:
+
+- map `user_id` or `device_id` to the currently connected gateway instance
+- answer "is this user online on any active device?"
+- help fan-out workers route delivery events to the right gateway
+
+Without this component, the system has no efficient way to find the live connection that should receive a message.
+
+#### Authentication and Token Validation
+
+Responsibilities:
+
+- validate access tokens or session credentials
+- bind a connection to a user and device identity
+- reject expired, revoked, or malformed sessions
+
+At very large scale this may rely on:
+
+- signed tokens validated locally
+- plus occasional checks against revocation or device state
+
+#### Conversation Service
+
+Responsibilities:
+
+- validate that a conversation exists
+- determine whether the sender is allowed to post in that conversation
+- expose metadata such as conversation type and participant model
+
+This service owns conversation-level rules, not raw message persistence.
+
+#### Message Write Service
+
+Responsibilities:
+
+- validate the send request
+- dedupe client retries using client message IDs
+- assign canonical server ordering within the conversation
+- durably persist the message
+- publish a delivery event after persistence succeeds
+
+This is the core write authority for messages.
+
+#### Group Membership Service
+
+Responsibilities:
+
+- store and serve group membership
+- apply membership changes such as add, remove, join, leave
+- answer which users should receive a group message at a given membership version
+
+This matters because group delivery is only correct if fan-out uses the right membership snapshot.
+
+#### Message and Conversation Store
+
+Responsibilities:
+
+- persist canonical conversation history
+- support sync reads by conversation and sequence
+- store durable message records and receipt state
+
+This is the source of truth.
+
+Delivery queues and push systems help with timeliness, but this store defines correctness.
+
+#### Delivery Stream
+
+Responsibilities:
+
+- buffer and durably hand off post-persistence delivery work
+- decouple message acceptance from recipient delivery
+- allow retries if downstream fan-out or notification work fails
+
+This is one of the most important boundaries in the system because it protects the sender path from delivery fan-out cost.
+
+#### Fan-out Worker Fleet
+
+Responsibilities:
+
+- consume delivery events from the stream
+- resolve recipient targets for direct chats or groups
+- check session directory to find online devices
+- send realtime delivery requests to the right gateways
+- fall back to push-notification workflow when the recipient is offline
+
+This tier turns one canonical message write into many recipient-specific delivery actions.
+
+#### Read State Service
+
+Responsibilities:
+
+- accept read-cursor advancement from clients
+- persist the latest read position per conversation and user
+- publish receipt update events so sender devices can update UI state
+
+Read state is related to messaging, but it evolves independently enough that separating it is useful.
+
+#### Sync and History Service
+
+Responsibilities:
+
+- return missed messages after reconnect
+- paginate message history
+- return updated receipt state and membership changes when needed
+
+This service is critical because realtime sockets are an optimization for latency, not a replacement for durable sync.
+
+#### Push Notification Service
+
+Responsibilities:
+
+- decide when a recipient should receive mobile push
+- build provider-specific payloads
+- send notifications to APNS, FCM, or equivalent providers
+- enforce notification throttling and dedupe rules
+
+It should not be treated as the storage of record for messages.
+
+### How Fan-out Workers Work
+
+Fan-out workers exist because the expensive part of messaging is usually not accepting one message from the sender.
+
+The expensive part is:
+
+- determining who should receive it
+- routing it to all currently connected devices
+- retrying when some of those devices are offline or temporarily unreachable
+
+For a direct message, the worker typically does this:
+
+1. consume delivery event for message `M`
+2. resolve recipient user and active device sessions
+3. check session directory for online gateways
+4. send delivery commands to those gateways
+5. if no live session exists, mark the message as pending offline delivery and trigger push workflow
+
+For a group message, the worker usually does more:
+
+1. consume one group delivery event
+2. fetch or read cached membership snapshot
+3. expand the message into recipient-specific delivery tasks
+4. route online members through gateways
+5. queue notification work for offline members
+
+This is intentionally asynchronous because:
+
+- large groups can create sudden delivery bursts
+- downstream devices may be slow or offline
+- send latency should not depend on completing every recipient delivery
+
+### How Push Notification Service Works
+
+Push notification is often misunderstood in chat systems.
+
+The notification service is not the durable message transport.
+
+Instead, it acts as a wake-up path when the recipient is not connected through the realtime channel.
+
+Typical behavior:
+
+1. fan-out worker determines the target device is offline or backgrounded
+2. notification service builds a compact notification payload
+3. it sends that payload to APNS, FCM, or the platform provider
+4. the mobile OS wakes or alerts the app
+5. the client reconnects or calls sync APIs
+6. the actual message content is fetched from the message store
+
+This design matters because push delivery is not guaranteed to be:
+
+- immediate
+- durable
+- ordered
+- complete
+
+So push should be treated as:
+
+- a best-effort signal to prompt reconnect or attention
+
+not as:
+
+- the canonical delivery pipeline
 
 ## 9. Request Flows
 
