@@ -14,6 +14,7 @@ These case studies are intended to help readers practice:
 
 ## Topics
 
+- [Notification Service](notification-service/notificationService.md)
 - [TinyURL](tinyurl/tinyUrl.md)
 - [WhatsApp Messenger](whatsapp-messenger/whatsAppMessenger.md)
 

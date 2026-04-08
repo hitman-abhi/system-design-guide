@@ -78,6 +78,7 @@ End-to-end system design case studies that combine multiple concepts into realis
 
 Section index: [Case Studies](Case-Studies/README.md)
 
+- [Notification Service](Case-Studies/notification-service/notificationService.md): How to design a shared multi-channel notification platform with preferences, templates, scheduling, retries, provider integration, and delivery tracking.
 - [TinyURL](Case-Studies/tinyurl/tinyUrl.md): How to design a read-heavy URL shortening service with fast redirects, unique code generation, caching, and async analytics.
 - [WhatsApp Messenger](Case-Studies/whatsapp-messenger/whatsAppMessenger.md): How to design a large-scale messaging system with 1:1 chat, group messaging, delivery flow, and read receipts.
 
