@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900" role="img" aria-labelledby="title desc">
+  <title id="title">Notification Service High Level Architecture</title>
+  <desc id="desc">High level architecture for a notification platform showing producer ingress, orchestration, scheduling and queues, channel workers, providers, callbacks, and analytics.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8f5ef; }
+      .plane { fill: #ffffff; stroke: #d7e0ea; stroke-width: 2; rx: 20; ry: 20; }
+      .box { stroke-width: 2; rx: 16; ry: 16; }
+      .title { font: 700 20px -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; fill: #17324d; }
+      .label { font: 600 16px -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; fill: #17324d; }
+      .small { font: 500 12px -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; fill: #37516b; }
+      .edge { fill: #eef5ff; stroke: #4c78a8; }
+      .core { fill: #eaf8ef; stroke: #4d8c5a; }
+      .exec { fill: #fff0ea; stroke: #cf6f45; }
+      .data { fill: #f4f0ff; stroke: #7b68b3; }
+      .arrow { stroke: #4b5f73; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#4b5f73"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1500" height="900"/>
+
+  <rect class="plane" x="40" y="50" width="230" height="780"/>
+  <text class="title" x="60" y="86">Producer Ingress</text>
+  <rect class="box edge" x="70" y="130" width="170" height="90"/>
+  <text class="label" x="155" y="166" text-anchor="middle">Producer Services</text>
+  <text class="small" x="155" y="188" text-anchor="middle">Order, auth, billing, campaign apps</text>
+
+  <rect class="box edge" x="70" y="280" width="170" height="90"/>
+  <text class="label" x="155" y="316" text-anchor="middle">Notification API</text>
+  <text class="small" x="155" y="338" text-anchor="middle">Auth, validate, rate limit</text>
+  <text class="small" x="155" y="356" text-anchor="middle">Accept requests and bulk jobs</text>
+
+  <rect class="box data" x="70" y="430" width="170" height="90"/>
+  <text class="label" x="155" y="466" text-anchor="middle">Idempotency Store</text>
+  <text class="small" x="155" y="488" text-anchor="middle">Deduplicate retried submits</text>
+
+  <rect class="plane" x="310" y="50" width="400" height="780"/>
+  <text class="title" x="330" y="86">Orchestration Plane</text>
+
+  <rect class="box core" x="340" y="130" width="160" height="90"/>
+  <text class="label" x="420" y="166" text-anchor="middle">Orchestration</text>
+  <text class="small" x="420" y="188" text-anchor="middle">Policy, routing, job creation</text>
+  <text class="small" x="420" y="206" text-anchor="middle">Expand one request into channel jobs</text>
+
+  <rect class="box edge" x="530" y="130" width="150" height="90"/>
+  <text class="label" x="605" y="166" text-anchor="middle">Preference Service</text>
+  <text class="small" x="605" y="188" text-anchor="middle">Consent and quiet hours</text>
+
+  <rect class="box edge" x="340" y="280" width="160" height="90"/>
+  <text class="label" x="420" y="316" text-anchor="middle">Template Service</text>
+  <text class="small" x="420" y="338" text-anchor="middle">Render channel-specific content</text>
+
+  <rect class="box core" x="530" y="280" width="150" height="90"/>
+  <text class="label" x="605" y="316" text-anchor="middle">Scheduler</text>
+  <text class="small" x="605" y="338" text-anchor="middle">Release delayed jobs</text>
+
+  <rect class="box data" x="340" y="430" width="160" height="90"/>
+  <text class="label" x="420" y="466" text-anchor="middle">Status Store</text>
+  <text class="small" x="420" y="488" text-anchor="middle">Operational job state</text>
+
+  <rect class="box data" x="530" y="430" width="150" height="90"/>
+  <text class="label" x="605" y="466" text-anchor="middle">Job Queues</text>
+  <text class="small" x="605" y="488" text-anchor="middle">Buffered channel work</text>
+
+  <rect class="plane" x="750" y="50" width="390" height="780"/>
+  <text class="title" x="770" y="86">Execution Plane</text>
+
+  <rect class="box exec" x="780" y="130" width="150" height="90"/>
+  <text class="label" x="855" y="166" text-anchor="middle">Push Workers</text>
+  <text class="small" x="855" y="188" text-anchor="middle">Provider-specific send logic</text>
+
+  <rect class="box exec" x="960" y="130" width="150" height="90"/>
+  <text class="label" x="1035" y="166" text-anchor="middle">Email Workers</text>
+  <text class="small" x="1035" y="188" text-anchor="middle">Retries and rate control</text>
+
+  <rect class="box exec" x="780" y="290" width="150" height="90"/>
+  <text class="label" x="855" y="326" text-anchor="middle">SMS Workers</text>
+  <text class="small" x="855" y="348" text-anchor="middle">Sensitive cost path</text>
+
+  <rect class="box exec" x="960" y="290" width="150" height="90"/>
+  <text class="label" x="1035" y="326" text-anchor="middle">In-App Workers</text>
+  <text class="small" x="1035" y="348" text-anchor="middle">Write in-app notifications</text>
+
+  <rect class="box edge" x="780" y="470" width="150" height="90"/>
+  <text class="label" x="855" y="506" text-anchor="middle">Push Provider</text>
+  <text class="small" x="855" y="528" text-anchor="middle">APNS / FCM style providers</text>
+
+  <rect class="box edge" x="960" y="470" width="150" height="90"/>
+  <text class="label" x="1035" y="506" text-anchor="middle">Email / SMS Provider</text>
+  <text class="small" x="1035" y="528" text-anchor="middle">External delivery vendors</text>
+
+  <rect class="box data" x="870" y="630" width="150" height="90"/>
+  <text class="label" x="945" y="666" text-anchor="middle">In-App Store</text>
+  <text class="small" x="945" y="688" text-anchor="middle">User-visible inbox state</text>
+
+  <rect class="plane" x="1180" y="50" width="280" height="780"/>
+  <text class="title" x="1200" y="86">Feedback and Analytics</text>
+
+  <rect class="box core" x="1210" y="180" width="220" height="90"/>
+  <text class="label" x="1320" y="216" text-anchor="middle">Callback Processor</text>
+  <text class="small" x="1320" y="238" text-anchor="middle">Process delivered, bounced, opened</text>
+  <text class="small" x="1320" y="256" text-anchor="middle">Normalize provider responses</text>
+
+  <rect class="box data" x="1210" y="360" width="220" height="90"/>
+  <text class="label" x="1320" y="396" text-anchor="middle">Status Store Updates</text>
+  <text class="small" x="1320" y="418" text-anchor="middle">Update final delivery state</text>
+
+  <rect class="box data" x="1210" y="540" width="220" height="90"/>
+  <text class="label" x="1320" y="576" text-anchor="middle">Analytics Pipeline</text>
+  <text class="small" x="1320" y="598" text-anchor="middle">Aggregates, dashboards, reporting</text>
+
+  <path class="arrow" d="M155 220 L155 280"/>
+  <path class="arrow" d="M155 370 L155 430"/>
+  <path class="arrow" d="M240 325 L340 175"/>
+  <path class="arrow" d="M240 475 L340 175"/>
+  <path class="arrow" d="M500 175 L530 175"/>
+  <path class="arrow" d="M420 220 L420 280"/>
+  <path class="arrow" d="M500 175 L605 280"/>
+  <path class="arrow" d="M420 220 L420 430"/>
+  <path class="arrow" d="M605 370 L605 430"/>
+
+  <path class="arrow" d="M680 475 L780 175"/>
+  <path class="arrow" d="M680 475 L960 175"/>
+  <path class="arrow" d="M680 475 L780 335"/>
+  <path class="arrow" d="M680 475 L960 335"/>
+  <path class="arrow" d="M855 220 L855 470"/>
+  <path class="arrow" d="M1035 220 L1035 470"/>
+  <path class="arrow" d="M1035 380 L945 630"/>
+
+  <path class="arrow" d="M930 515 L1210 225"/>
+  <path class="arrow" d="M1110 515 L1210 225"/>
+  <path class="arrow" d="M1320 270 L1320 360"/>
+  <path class="arrow" d="M1320 450 L1320 540"/>
+
+  <text class="small" x="805" y="760">Producers only talk to the platform.</text>
+  <text class="small" x="805" y="780">Execution is isolated from orchestration and feedback processing.</text>
+</svg>

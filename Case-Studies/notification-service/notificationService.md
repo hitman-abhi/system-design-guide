@@ -382,50 +382,7 @@ Core components:
 - status store
 - analytics pipeline
 
-```mermaid
-flowchart LR
-    P[Producer Services]
-    API[Notification API]
-    IDEMP[(Idempotency Store)]
-    ORCH[Orchestration Service]
-    PREF[Preference Service]
-    TMPL[Template Service]
-    SCHED[Scheduler]
-    Q[(Job Queues)]
-    PUSHW[Push Workers]
-    EMAILW[Email Workers]
-    SMSW[SMS Workers]
-    INAPPW[In-App Workers]
-    PUSHP[Push Providers]
-    EMAILP[Email Providers]
-    SMSP[SMS Providers]
-    INAPP[(In-App Store)]
-    STATUS[(Operational Status Store)]
-    CALLBACK[Callback Processor]
-    ANALYTICS[Analytics Pipeline]
-
-    P --> API
-    API --> IDEMP
-    API --> ORCH
-    ORCH --> PREF
-    ORCH --> TMPL
-    ORCH --> STATUS
-    ORCH --> SCHED
-    SCHED --> Q
-    Q --> PUSHW
-    Q --> EMAILW
-    Q --> SMSW
-    Q --> INAPPW
-    PUSHW --> PUSHP
-    EMAILW --> EMAILP
-    SMSW --> SMSP
-    INAPPW --> INAPP
-    PUSHP --> CALLBACK
-    EMAILP --> CALLBACK
-    SMSP --> CALLBACK
-    CALLBACK --> STATUS
-    CALLBACK --> ANALYTICS
-```
+![Notification service high-level architecture](highLevelArchitecture.svg)
 
 What to notice:
 
