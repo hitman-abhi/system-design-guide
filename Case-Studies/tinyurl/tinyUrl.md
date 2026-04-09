@@ -245,25 +245,7 @@ Core components:
 - event/queue pipeline for click analytics
 - analytics storage and aggregation workers
 
-```mermaid
-flowchart LR
-    U[Client / Browser] --> DNS[DNS / edge]
-    DNS --> LB[Global / regional load balancer]
-
-    LB --> RS[Redirect service fleet]
-    LB --> AS[Link management API fleet]
-
-    RS --> RC[Redirect cache]
-    RC -->|miss| LM[(Link mapping store)]
-    RS -->|async click event| MQ[Click event queue / stream]
-
-    AS --> GEN[Short-code generation service]
-    AS --> LM
-    AS --> RC
-
-    MQ --> AW[Analytics workers]
-    AW --> AD[(Analytics store)]
-```
+![TinyURL high-level architecture](highLevelArchitecture.svg)
 
 What to notice:
 
@@ -322,7 +304,7 @@ sequenceDiagram
     participant U as User
     participant LB as Load Balancer
     participant API as Link Management API
-    participant GEN as Short-Code Generator
+    participant GEN as Short-Code Generation Service
     participant DB as Link Mapping Store
     participant CACHE as Redirect Cache
 
@@ -358,7 +340,7 @@ sequenceDiagram
     participant RS as Redirect Service
     participant CACHE as Redirect Cache
     participant DB as Link Mapping Store
-    participant MQ as Click Event Queue
+    participant MQ as Click Event Queue / Stream
 
     U->>LB: GET /{short_code}
     LB->>RS: forward redirect request
@@ -418,8 +400,8 @@ What to notice:
 ```mermaid
 sequenceDiagram
     participant RS as Redirect Service
-    participant MQ as Click Event Queue
-    participant W as Analytics Worker
+    participant MQ as Click Event Queue / Stream
+    participant W as Analytics Workers
     participant RAW as Raw Analytics Store
     participant AGG as Aggregation Pipeline
     participant VIEW as Analytics Read Store
