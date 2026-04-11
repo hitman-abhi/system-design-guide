@@ -78,10 +78,19 @@ End-to-end system design case studies that combine multiple concepts into realis
 
 Section index: [Case Studies](Case-Studies/README.md)
 
+- [Distributed Cache](Case-Studies/distributed-cache/distributedCache.md): How to design a Redis-like cache with sharding, replication, failover, eviction, and hot-key handling.
+- [Distributed File System](Case-Studies/distributed-file-system/distributedFileSystem.md): How to design a GFS-like storage system with metadata management, chunk replication, append semantics, and repair workflows.
 - [Leaderboard System](Case-Studies/leaderboard-system/leaderboardSystem.md): How to design a ranked serving system with durable score ingestion, ordered state maintenance, fast rank reads, and hot-board handling.
+- [Logging System](Case-Studies/logging-system/loggingSystem.md): How to design a log platform with durable ingestion, parse and enrich pipelines, indexing strategy, and separation of real-time search from batch processing.
+- [Metrics and Monitoring System](Case-Studies/metrics-monitoring-system/metricsMonitoringSystem.md): How to design a Prometheus-like system with high-write ingestion, TSDB storage, aggregations, retention tiers, and alert evaluation.
 - [News Feed System](Case-Studies/news-feed-system/newsFeedSystem.md): How to design a large-scale personalized home feed with hybrid fan-out, candidate generation, ranking stages, cache strategy, and hot-author handling.
 - [Notification Service](Case-Studies/notification-service/notificationService.md): How to design a shared multi-channel notification platform with preferences, templates, scheduling, retries, provider integration, and delivery tracking.
+- [Rate Limiter](Case-Studies/rate-limiter/rateLimiter.md): How to design a low-latency enforcement system with configurable policy, hot counter state, token-bucket or window algorithms, and explicit fail-open or fail-closed behavior.
+- [Recommendation System](Case-Studies/recommendation-system/recommendationSystem.md): How to design a Netflix-like recommendation platform with event ingestion, feature stores, candidate retrieval, ranking, and row assembly.
+- [Ride Sharing App](Case-Studies/ride-sharing-app/rideSharingApp.md): How to design an Uber-like platform with realtime driver location ingestion, geo-based dispatch, durable trip state, pricing boundaries, and payment workflows.
+- [Search System](Case-Studies/search-system/searchSystem.md): How to design an Elasticsearch-like platform with indexing pipelines, distributed shards, relevance ranking, and scatter-gather query execution.
 - [TinyURL](Case-Studies/tinyurl/tinyUrl.md): How to design a read-heavy URL shortening service with fast redirects, unique code generation, caching, and async analytics.
+- [Video Streaming Service](Case-Studies/video-streaming-service/videoStreamingService.md): How to design a YouTube-style platform with durable uploads, async transcoding, metadata management, adaptive playback, CDN delivery, and engagement logging.
 - [WhatsApp Messenger](Case-Studies/whatsapp-messenger/whatsAppMessenger.md): How to design a large-scale messaging system with 1:1 chat, group messaging, delivery flow, and read receipts.
 
 
