@@ -291,7 +291,48 @@ The system can be viewed as four cooperating planes:
 3. feed serving and ranking plane
 4. analytics and feature plane
 
-![News feed high-level architecture](highLevelArchitecture.svg)
+For interview discussion, the high-level diagram focuses on the major dataflow boundaries:
+
+- publish a post durably
+- expand or assemble feed candidates
+- serve and rank the feed
+- ingest engagement asynchronously
+
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+flowchart TB
+    U[User Client] --> API[API Gateway]
+
+    API --> PS[Post Service]
+    API --> GS[Graph Service]
+    API --> FS[Feed Service]
+    API --> ES[Event Ingestion]
+
+    PS --> PDB[(Post Store)]
+    PS --> PUB[Post Publish Stream]
+
+    GS --> GDB[(Follow Graph Store)]
+
+    PUB --> FAN[Fan-out Workers]
+    PUB --> CAND[Candidate Builder]
+
+    GDB --> FAN
+    GDB --> CAND
+    PDB --> CAND
+
+    FAN --> FDB[(Feed Edge Store)]
+
+    FS --> FC[Feed Cache]
+    FC -->|cache miss| FDB
+    FS --> RANK[Ranking Service]
+    RANK --> FEAT[(Feature Store)]
+    RANK --> PDB
+    CAND --> FS
+
+    ES --> EVT[Engagement Stream]
+    EVT --> FEAT
+    EVT --> OLAP[(Analytics Store)]
+```
 
 The key separation is this:
 
@@ -299,7 +340,16 @@ The key separation is this:
 - feed serving must remain fast
 - ranking and analytics must be allowed to lag somewhat without taking down the product
 
+What to notice:
+
+- post creation is acknowledged after durable persistence and event publication, not after feed fan-out completes
+- the follow graph is shared infrastructure used by both write-time fan-out and read-time candidate assembly
+- feed serving is cache-aware, but ranking still operates on candidate sets rather than the full graph online
+- engagement ingestion is isolated from the critical read path
+
 ### Component Responsibilities
+
+The diagram includes only the components that materially change the system shape at scale.
 
 #### User Client
 

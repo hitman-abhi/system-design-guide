@@ -78,6 +78,7 @@ End-to-end system design case studies that combine multiple concepts into realis
 
 Section index: [Case Studies](Case-Studies/README.md)
 
+- [Leaderboard System](Case-Studies/leaderboard-system/leaderboardSystem.md): How to design a ranked serving system with durable score ingestion, ordered state maintenance, fast rank reads, and hot-board handling.
 - [News Feed System](Case-Studies/news-feed-system/newsFeedSystem.md): How to design a large-scale personalized home feed with hybrid fan-out, candidate generation, ranking stages, cache strategy, and hot-author handling.
 - [Notification Service](Case-Studies/notification-service/notificationService.md): How to design a shared multi-channel notification platform with preferences, templates, scheduling, retries, provider integration, and delivery tracking.
 - [TinyURL](Case-Studies/tinyurl/tinyUrl.md): How to design a read-heavy URL shortening service with fast redirects, unique code generation, caching, and async analytics.

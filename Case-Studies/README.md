@@ -14,6 +14,7 @@ These case studies are intended to help readers practice:
 
 ## Topics
 
+- [Leaderboard System](leaderboard-system/leaderboardSystem.md)
 - [News Feed System](news-feed-system/newsFeedSystem.md)
 - [Notification Service](notification-service/notificationService.md)
 - [TinyURL](tinyurl/tinyUrl.md)
