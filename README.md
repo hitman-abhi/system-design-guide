@@ -89,6 +89,7 @@ Section index: [Case Studies](Case-Studies/README.md)
 - [Recommendation System](Case-Studies/recommendation-system/recommendationSystem.md): How to design a Netflix-like recommendation platform with event ingestion, feature stores, candidate retrieval, ranking, and row assembly.
 - [Ride Sharing App](Case-Studies/ride-sharing-app/rideSharingApp.md): How to design an Uber-like platform with realtime driver location ingestion, geo-based dispatch, durable trip state, pricing boundaries, and payment workflows.
 - [Search System](Case-Studies/search-system/searchSystem.md): How to design an Elasticsearch-like platform with indexing pipelines, distributed shards, relevance ranking, and scatter-gather query execution.
+- [Ticket Booking System](Case-Studies/ticket-booking-system/ticketBookingSystem.md): How to design a high-contention seat inventory system with seat-map reads, temporary holds, transactional booking, payment orchestration, and ticket issuance.
 - [TinyURL](Case-Studies/tinyurl/tinyUrl.md): How to design a read-heavy URL shortening service with fast redirects, unique code generation, caching, and async analytics.
 - [Video Streaming Service](Case-Studies/video-streaming-service/videoStreamingService.md): How to design a YouTube-style platform with durable uploads, async transcoding, metadata management, adaptive playback, CDN delivery, and engagement logging.
 - [WhatsApp Messenger](Case-Studies/whatsapp-messenger/whatsAppMessenger.md): How to design a large-scale messaging system with 1:1 chat, group messaging, delivery flow, and read receipts.
