@@ -366,10 +366,10 @@ At a large scale, the platform should separate:
 - callback processing
 - analytics and reporting
 
-Core components:
+For interview discussion, the high-level diagram should show the main control points rather than every helper service:
 
 - producer services
-- API gateway or notification ingress
+- notification API
 - idempotency store
 - orchestration service
 - preference service
@@ -382,7 +382,37 @@ Core components:
 - status store
 - analytics pipeline
 
-![Notification service high-level architecture](highLevelArchitecture.svg)
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+flowchart TB
+    P[Producer Services] --> API[Notification API]
+    API --> IDEMP[(Idempotency Store)]
+    API --> ORCH[Orchestration Service]
+
+    ORCH --> PREF[Preference Service]
+    ORCH --> TMPL[Template Service]
+    ORCH --> STATUS[(Operational Status Store)]
+    ORCH --> SCHED[Scheduler]
+
+    SCHED --> Q[(Job Queues)]
+
+    Q --> PUSHW[Push Workers]
+    Q --> EMAILW[Email Workers]
+    Q --> SMSW[SMS Workers]
+    Q --> INAPPW[In-App Workers]
+
+    PUSHW --> PUSHP[Push Providers]
+    EMAILW --> EMAILP[Email Providers]
+    SMSW --> SMSP[SMS Providers]
+    INAPPW --> INAPP[(In-App Store)]
+
+    PUSHP --> CALLBACK[Callback Processor]
+    EMAILP --> CALLBACK
+    SMSP --> CALLBACK
+
+    CALLBACK --> STATUS
+    CALLBACK --> ANALYTICS[Analytics Pipeline]
+```
 
 What to notice:
 
@@ -390,6 +420,14 @@ What to notice:
 - orchestration is separate from execution because routing and policy decisions are different from sending
 - scheduling is separate from worker execution because deferred delivery needs time-based release, not busy waiting
 - callbacks are handled asynchronously because provider outcome reporting is delayed and provider-specific
+
+This diagram intentionally compresses the platform into the boundaries that matter most in an interview:
+
+- intake
+- policy and orchestration
+- queued execution
+- provider interaction
+- feedback and analytics
 
 ### Responsibility of Each Service
 

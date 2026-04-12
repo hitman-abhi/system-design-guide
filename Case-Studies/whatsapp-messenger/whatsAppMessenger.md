@@ -454,34 +454,77 @@ At a large scale, the system should separate:
 - fan-out and delivery
 - read state updates
 
-Core components:
+For interview discussion, the high-level diagram should stay focused on the primary end-to-end path:
 
 - clients
-- DNS / global traffic routing
 - edge and load balancer layer
 - realtime gateway fleet
-- session directory
-- authentication and token validation
-- conversation service
 - message write service
 - message store
-- group membership service
+- conversation and group service
 - delivery stream / queue
 - fan-out workers
 - read-state service
 - sync service
 - push notification service
-- caches for hot metadata and session lookups
+- mobile push provider
 
-![WhatsApp messenger high-level architecture](highLevelArchitecture.svg)
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+flowchart TB
+    C[Mobile and Web Clients]
+    EDGE[Edge / Load Balancer]
+    GW[Realtime Gateway Fleet]
+    MSG[Message Write Service]
+    STORE[(Message Store)]
+    STREAM[Delivery Stream]
+    FAN[Fan-out Workers]
+    PUSH[Push Notification Service]
+    PROVIDER[APNS / FCM]
+    SYNC[Sync and History Service]
+    READ[Read State Service]
+    META[Conversation and Group Service]
+
+    C --> EDGE
+    EDGE --> GW
+    EDGE --> SYNC
+
+    GW --> MSG
+    GW --> READ
+
+    MSG --> META
+    MSG --> STORE
+    MSG --> STREAM
+
+    READ --> STORE
+
+    STREAM --> FAN
+    FAN --> GW
+    FAN --> PUSH
+    PUSH --> PROVIDER
+    PROVIDER --> C
+
+    SYNC --> STORE
+    SYNC --> META
+```
 
 What to notice:
 
 - the realtime ingress path is different from the sync and history path
-- connection management, message writes, read updates, and offline recovery are not one service
+- connection handling, message writes, read updates, and offline recovery are not one service
 - the sender write path ends after durable persistence and event publication, not after delivery to all recipients
 - fan-out workers sit behind a durable stream because delivery is asynchronous and retriable
 - push notifications are downstream of delivery logic, not the primary channel for message correctness
+
+This diagram is intentionally simplified for system-design interviews.
+
+It omits lower-level helpers such as:
+
+- session directory
+- token validation internals
+- metadata caches
+
+Those are real production components, but they are not the main architectural story.
 
 At smaller scale, several of these responsibilities can live in one logical service. At large scale, separating them makes throughput shaping and operational isolation much easier.
 
@@ -539,7 +582,7 @@ Responsibilities:
 - answer "is this user online on any active device?"
 - help fan-out workers route delivery events to the right gateway
 
-Without this component, the system has no efficient way to find the live connection that should receive a message.
+This lookup is often implemented through a session directory behind the scenes, even though the simplified HLD does not show that box explicitly.
 
 #### Authentication and Token Validation
 
@@ -554,15 +597,16 @@ At very large scale this may rely on:
 - signed tokens validated locally
 - plus occasional checks against revocation or device state
 
-#### Conversation Service
+#### Conversation and Group Service
 
 Responsibilities:
 
 - validate that a conversation exists
 - determine whether the sender is allowed to post in that conversation
 - expose metadata such as conversation type and participant model
+- answer which users should receive a group message at a given membership version
 
-This service owns conversation-level rules, not raw message persistence.
+This service owns conversation-level rules and recipient resolution, not raw message persistence.
 
 #### Message Write Service
 
@@ -575,16 +619,6 @@ Responsibilities:
 - publish a delivery event after persistence succeeds
 
 This is the core write authority for messages.
-
-#### Group Membership Service
-
-Responsibilities:
-
-- store and serve group membership
-- apply membership changes such as add, remove, join, leave
-- answer which users should receive a group message at a given membership version
-
-This matters because group delivery is only correct if fan-out uses the right membership snapshot.
 
 #### Message and Conversation Store
 

@@ -232,26 +232,45 @@ At a high level, the system can be divided into two paths:
 1. write path for link creation
 2. read path for redirect resolution
 
-Core components:
+For interview discussion, the high-level diagram should emphasize only the critical production boundaries:
 
 - client
-- DNS and edge/CDN layer for static assets and global ingress
+- DNS and edge ingress
 - load balancer
-- API service for link creation and management
+- link management API
 - redirect service
-- cache for hot short-code lookups
-- primary datastore for link mappings
-- ID or short-code generation service
-- event/queue pipeline for click analytics
-- analytics storage and aggregation workers
+- short-code generation service
+- redirect cache
+- link mapping store
+- click event queue or stream
+- analytics workers
+- analytics store
 
-![TinyURL high-level architecture](highLevelArchitecture.svg)
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+flowchart TB
+    U[Client / Browser] --> DNS[DNS / Edge]
+    DNS --> LB[Load Balancer]
+
+    LB --> API[Link Management API]
+    LB --> RS[Redirect Service]
+
+    API --> GEN[Short-Code Generation Service]
+    API --> DB[(Link Mapping Store)]
+
+    RS --> CACHE[Redirect Cache]
+    CACHE -->|cache miss| DB
+    RS -->|async click event| MQ[Click Event Queue / Stream]
+
+    MQ --> AW[Analytics Workers]
+    AW --> AD[(Analytics Store)]
+```
 
 What to notice:
 
 - the system has two distinct hot paths: create and redirect
-- the redirect fleet sits behind a load balancer because redirect traffic is the dominant scaling pressure
-- redirect lookups should usually terminate in cache, with the mapping store as the miss path
+- the create path owns correctness: validation, alias generation, and persistence
+- the redirect path owns latency: cache-first lookup with the mapping store as fallback
 - analytics is asynchronous and should not delay HTTP redirect latency
 - code generation belongs only on the create path, not on the redirect path
 
@@ -269,7 +288,7 @@ The redirect path is read-heavy and latency-sensitive:
 - resolve mapping
 - return redirect quickly
 
-That is why these two paths are better represented as separate service fleets even if they initially live in one deployable codebase.
+That is why these two paths are better represented as separate logical paths even if they initially live in one deployable codebase.
 
 ### Why Separate Read and Write Fleets
 
