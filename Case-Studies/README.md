@@ -25,6 +25,7 @@ These case studies are intended to help readers practice:
 - [Recommendation System](recommendation-system/recommendationSystem.md)
 - [Ride Sharing App](ride-sharing-app/rideSharingApp.md)
 - [Search System](search-system/searchSystem.md)
+- [Stock Broker Platform](stock-broker-platform/stockBrokerPlatform.md)
 - [Ticket Booking System](ticket-booking-system/ticketBookingSystem.md)
 - [TinyURL](tinyurl/tinyUrl.md)
 - [Video Streaming Service](video-streaming-service/videoStreamingService.md)
